@@ -27,6 +27,9 @@ function love.load()
     player2 = Paddle(VIRTUAL_WIDTH - 10, VIRTUAL_HEIGHT - 30, 5, 20)
     ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
 
+    servingPlayer = math.random(2) == 1 and 1 or 2
+    if servingPlayer == 1 then ball.dx = 100 else ball.dx = -100 end
+
     gameState = 'start'
 
    push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
@@ -42,13 +45,17 @@ function love.update(dt)
         if ball.x <= 0 then
             player2Score = player2Score + 1
             ball:reset()
-            gameState = 'start'
+            ball.dx = 100
+            servingPlayer = 1
+            gameState = 'serve'
         end
 
         if ball.x >= VIRTUAL_WIDTH - 4 then
             player1Score = player1Score + 1
             ball:reset()
-            gameState = 'start'
+            ball.dx = -100
+            servingPlayer = 2
+            gameState = 'serve'
         end
 
         if ball:collides(player1) or ball:collides(player2) then
@@ -93,6 +100,8 @@ function love.keypressed(key)
         love.event.quit()
     elseif key == 'enter' or key == 'return' then
         if gameState == 'start' then
+            gameState = 'serve'
+        elseif gameState == 'serve' then
             gameState = 'play'
         end
     end
@@ -102,6 +111,16 @@ function love.draw()
     push:apply('start')
 
     love.graphics.clear(40 / 255, 45 / 255, 52 / 255, 255 / 255)
+
+    love.graphics.setFont(smallFont)
+    if gameState == 'start' then
+        love.graphics.printf('Welcome to Pong!', 0, 20, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf('Press Enter to Play!', 0, 32, VIRTUAL_WIDTH, 'center')
+    elseif gameState == 'serve' then
+        local message = "Player " .. tostring(servingPlayer) .. "'s turn"
+        love.graphics.printf(message, 0, 20, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf('Press Enter to Serve!', 0, 32, VIRTUAL_WIDTH, 'center')
+    end
 
     love.graphics.setFont(scoreFont)
     love.graphics.print(player1Score, VIRTUAL_WIDTH / 2 - 50, VIRTUAL_HEIGHT / 3)
