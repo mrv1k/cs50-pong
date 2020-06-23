@@ -14,7 +14,7 @@
 
     This version is built to more closely resemble the NES than
     the original Pong machines or the Atari 2600 in terms of
-    resolution, though in widescreen (16:9) so it looks nicer on 
+    resolution, though in widescreen (16:9) so it looks nicer on
     modern systems.
 ]]
 
@@ -26,7 +26,7 @@
 push = require 'push'
 
 -- the "Class" library we're using will allow us to represent anything in
--- our game as code, rather than keeping track of many disparate variables and
+-- our game as class, rather than keeping track of many disparate variables and
 -- methods
 Class = require 'class'
 
@@ -51,7 +51,7 @@ PADDLE_SPEED = 200
     Runs when the game first starts up, only once; used to initialize the game.
 ]]
 function love.load()
-    
+
     -- set love's default filter to "nearest-neighbor", which essentially
     -- means there will be no filtering of pixels (blurriness), which is
     -- important for a nice crisp, 2D look
@@ -99,6 +99,9 @@ function love.load()
     player2 = Paddle(VIRTUAL_WIDTH - 15, VIRTUAL_HEIGHT - 30, 5, 20)
     ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
 
+    player1AI = true
+    player2AI = true
+
     gameState = 'start'
 end
 
@@ -111,7 +114,7 @@ function love.resize(w, h)
 end
 
 --[[
-    Runs every frame, with "dt" passed in, our delta in seconds 
+    Runs every frame, with "dt" passed in, our delta in seconds
     since the last frame, which LÖVE2D supplies us.
 ]]
 function love.update(dt)
@@ -167,8 +170,8 @@ function love.update(dt)
             ball.dy = -ball.dy
             sounds['wall_hit']:play()
         end
-        
-        -- if we reach the left or right edge of the screen, 
+
+        -- if we reach the left or right edge of the screen,
         -- go back to start and update the score
         if ball.x < 0 then
             servingPlayer = 1
@@ -191,7 +194,7 @@ function love.update(dt)
             servingPlayer = 2
             player1Score = player1Score + 1
             sounds['score']:play()
-            
+
             if player1Score == 10 then
                 winningPlayer = 1
                 gameState = 'done'
@@ -204,8 +207,10 @@ function love.update(dt)
 
     -- player 1 movement
     if love.keyboard.isDown('w') then
+        player1AI = false
         player1.dy = -PADDLE_SPEED
     elseif love.keyboard.isDown('s') then
+        player1AI = false
         player1.dy = PADDLE_SPEED
     else
         player1.dy = 0
@@ -213,11 +218,20 @@ function love.update(dt)
 
     -- player 2 movement
     if love.keyboard.isDown('up') then
+        player2AI = false
         player2.dy = -PADDLE_SPEED
     elseif love.keyboard.isDown('down') then
+        player2AI = false
         player2.dy = PADDLE_SPEED
     else
         player2.dy = 0
+    end
+
+    if player1AI then
+        player1.y = ball.y
+    end
+    if player2AI then
+        player2.y = ball.y
     end
 
     -- update our ball based on its DX and DY only if we're in play state;
@@ -231,7 +245,7 @@ function love.update(dt)
 end
 
 --[[
-    Keyboard handling, called by LÖVE2D each frame; 
+    Keyboard handling, called by LÖVE2D each frame;
     passes in the key we pressed so we can access.
 ]]
 function love.keypressed(key)
@@ -267,7 +281,7 @@ function love.keypressed(key)
 end
 
 --[[
-    Called after update by LÖVE2D, used to draw anything to the screen, 
+    Called after update by LÖVE2D, used to draw anything to the screen,
     updated or otherwise.
 ]]
 function love.draw()
@@ -288,7 +302,7 @@ function love.draw()
         love.graphics.printf('Press Enter to begin!', 0, 20, VIRTUAL_WIDTH, 'center')
     elseif gameState == 'serve' then
         love.graphics.setFont(smallFont)
-        love.graphics.printf('Player ' .. tostring(servingPlayer) .. "'s serve!", 
+        love.graphics.printf('Player ' .. tostring(servingPlayer) .. "'s serve!",
             0, 10, VIRTUAL_WIDTH, 'center')
         love.graphics.printf('Press Enter to serve!', 0, 20, VIRTUAL_WIDTH, 'center')
     elseif gameState == 'play' then
@@ -328,7 +342,7 @@ function displayScore()
     -- draw score on the left and right center of the screen
     -- need to switch font to draw before actually printing
     love.graphics.setFont(scoreFont)
-    love.graphics.print(tostring(player1Score), VIRTUAL_WIDTH / 2 - 50, 
+    love.graphics.print(tostring(player1Score), VIRTUAL_WIDTH / 2 - 50,
         VIRTUAL_HEIGHT / 3)
     love.graphics.print(tostring(player2Score), VIRTUAL_WIDTH / 2 + 30,
         VIRTUAL_HEIGHT / 3)
