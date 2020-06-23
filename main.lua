@@ -36,6 +36,20 @@ function love.load()
 end
 
 function love.update(dt)
+    if ball:collides(paddle1) or ball:collides(paddle2) then
+        ball.dx = -ball.dx
+    end
+
+    if ball.y <= 0 then
+        ball.dy = -ball.dy
+        ball.y = 0
+    end
+
+    if ball.y >= VIRTUAL_HEIGHT - 4 then
+        ball.dy = -ball.dy
+        ball.y = VIRTUAL_HEIGHT - 4
+    end
+
     paddle1:update(dt)
     paddle2:update(dt)
 
@@ -93,5 +107,15 @@ function love.draw()
     paddle2:render()
     ball:render()
 
+    displayFPS()
+
     push:apply('end')
+end
+
+
+function displayFPS()
+    love.graphics.setColor(0, 1, 0, 1)
+    love.graphics.setFont(smallFont)
+    love.graphics.print('FPS :' .. tostring(love.timer.getFPS()), 40, 20)
+    love.graphics.setColor(1, 1, 1, 1)
 end

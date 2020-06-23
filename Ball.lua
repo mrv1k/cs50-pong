@@ -10,6 +10,18 @@ function Ball:init(x, y, width, height)
     self.dy = math.random(-50, 50)
 end
 
+function Ball:collides(box)
+    if self.x > box.x + box.width or self.x + self.width < box.x then
+        return false
+    end
+
+    if self.y > box.y + box.height or self.y + self.height < box.y then
+        return false
+    end
+
+    return true
+end
+
 function Ball:update(dt)
     self.x = self.x + self.dx * dt
     self.y = self.y + self.dy * dt
